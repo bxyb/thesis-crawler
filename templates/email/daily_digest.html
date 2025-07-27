@@ -1,0 +1,54 @@
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        .paper { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .paper-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .paper-meta { color: #666; font-size: 14px; margin-bottom: 8px; }
+        .paper-abstract { color: #555; line-height: 1.5; margin-bottom: 10px; }
+        .paper-score { background: #f8f9fa; padding: 5px 10px; border-radius: 15px; font-size: 12px; }
+        .btn { display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Daily Research Digest</h1>
+            <p>Your personalized paper recommendations for {{ current_date }}</p>
+        </div>
+        
+        <h2>Top {{ paper_count }} Papers for You</h2>
+        
+        {% for paper in papers %}
+        <div class="paper">
+            <div class="paper-title">{{ paper.title }}</div>
+            <div class="paper-meta">
+                <strong>Authors:</strong> {{ paper.authors }} | 
+                <strong>Published:</strong> {{ paper.published_date }} |
+                <strong>Categories:</strong> {{ paper.categories }}
+            </div>
+            <div class="paper-abstract">{{ paper.abstract }}</div>
+            <div class="paper-score">
+                🔥 Hot Score: {{ "%.1f"|format(paper.hot_score) }} | 
+                ✨ Novelty: {{ "%.1f"|format(paper.novelty_score) }} |
+                📊 Relevance: {{ "%.1f"|format(paper.score) }}
+            </div>
+            <div style="margin-top: 10px;">
+                <a href="{{ paper.url }}" class="btn">Read Abstract</a>
+                <a href="{{ paper.pdf_url }}" class="btn">Download PDF</a>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ dashboard_url }}" class="btn">View All Recommendations</a>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+            <p>You can update your preferences <a href="{{ dashboard_url }}/preferences">here</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
