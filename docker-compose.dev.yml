@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Redis for development
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - thesis_dev_net
+
+  # SQLite for development (no external DB)
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=sqlite:///data/thesis_crawler.db
+      - REDIS_URL=redis://redis:6379/0
+      - FLASK_ENV=development
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - .:/app  # Mount source for development
+    depends_on:
+      - redis
+    networks:
+      - thesis_dev_net
+    command: python app.py
+
+  # Celery worker for development
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    environment:
+      - DATABASE_URL=sqlite:///data/thesis_crawler.db
+      - REDIS_URL=redis://redis:6379/0
+      - C_FORCE_ROOT=1
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - .:/app  # Mount source for development
+    depends_on:
+      - redis
+    networks:
+      - thesis_dev_net
+    command: celery -A src.scheduler worker --loglevel=debug --concurrency=1
+
+  # Celery beat for development
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    environment:
+      - DATABASE_URL=sqlite:///data/thesis_crawler.db
+      - REDIS_URL=redis://redis:6379/0
+      - C_FORCE_ROOT=1
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - .:/app  # Mount source for development
+    depends_on:
+      - redis
+    command: celery -A src.scheduler beat --loglevel=debug
+    networks:
+      - thesis_dev_net
+
+volumes:
+  redis_dev_data:
+
+networks:
+  thesis_dev_net:
+    driver: bridge
